@@ -13,7 +13,7 @@
             text-align:center;
             line-height:60px;
             text-align: center; /*让div内部文字居中*/
-	margin: auto;
+	margin: 168px auto;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -24,12 +24,12 @@
 </head>
 <body>
     <div class="clock">
-       口令不存在，<span id='sid'>3</span>秒后页面即将返回首页
+       口令不存在，即将返回首页
     </div>
 </body>
 <script>
 sidobj=document.getElementById('sid');
-s=3;
+s=1;
  
 sobj=setInterval(function(){
     sidobj.innerHTML=--s;
