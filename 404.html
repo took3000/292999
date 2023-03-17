@@ -11,7 +11,7 @@
     <style type="text/css">
 
         * {
-            color: #222;
+            color: rgba(124, 124, 225);
         }
 
         a {
@@ -44,7 +44,7 @@
                 zoom: 1;
                 
                 background: url(链接);
-                background-color: #222;
+                background-color: #0a0a0a;
                 background-repeat: no-repeat;
                 background-size: cover;
                 -webkit-background-size: cover;
@@ -372,6 +372,8 @@
     function jumpUrl(){
         var arr = new Array(
            "https://292999.xyz", /*首页*/
+                               "https://292999.xyz", /*首页*/
+                                                   "https://292999.xyz", /*首页*/
           
         );
      window.location.href = arr[Math.floor(Math.random() * arr.length)];
