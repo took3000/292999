@@ -64,7 +64,7 @@ margin-bottom:1em；margin-bottom:0.6em;border:2px solid #fff
 }
 
 .code-input {
-  background: var(--divider_tertiary);
+  background:#fff;
   border-radius: 10px;
   max-width: 327px;
   width: 100%;
@@ -83,7 +83,7 @@ margin-bottom:1em；margin-bottom:0.6em;border:2px solid #fff
   max-width: 327px;
   width: 100%;
   height: 50px;
-  margin-top: 16px;
+  margin: 16px 0;
   color: var(--basic_white);
   border: 0;
   @include ads.font-MobileTitle-H3;
