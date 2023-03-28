@@ -3,6 +3,11 @@ margin:4.2em 0 1em 0;
              column-width: 336px; // 宽度200px
         }
 
+ .pox {
+margin:4.2em 0 1em 0;
+             column-width: 672px; // 宽度200px
+        }
+
 .top{
 display: block;
     position: fixed;
