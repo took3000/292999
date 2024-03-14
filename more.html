@@ -1,426 +1,55 @@
+
 <!DOCTYPE html>
-<html>
-  
-<head>
+<html lang="en">
+<head><meta charset="UTF-8"/>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>随便看看 - 292999.xyz</title>
-    <link rel="shortcut icon" href="./fliee/ico.png" type="image/x-icon" title="百度搜索">
-
-    <style type="text/css">
-
-        * {
-            color: rgba(124, 124, 225);
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .blink {
-            position: fixed;
-            height: 100%;
-            width: 100%;
-            text-align: center;
-            display: flex;
-            display: -webkit-flex;
-            align-items: center;
-            justify-content: center;
-            animation: blink 3s linear infinite;
-            -webkit-animation: blink 3s linear infinite;
-            -moz-animation: blink 3s linear infinite;
-            -ms-animation: blink 3s linear infinite;
-            -o-animation: blink 3s linear infinite;
-        }
-        .all_bg{
-                position:fixed;
-                top: 0;
-                left: 0;
-                width:100%;
-                height:100%;
-                min-width: 780px;
-                z-index:-10;
-                zoom: 1;
-                
-                background: url(链接);
-                background-color: #0a0a0a;
-                background-repeat: no-repeat;
-                background-size: cover;
-                -webkit-background-size: cover;
-                -o-background-size: cover;
-                background-position: center 0;
-            }
-
-        @keyframes blink {
-            0% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            20% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            40% {
-                opacity: 0.3;
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            90% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            100% {
-                opacity: 0.2;
-                transform: scale(1.2);
-            }
-        }
-
-        @-webkit-keyframes blink {
-            0% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            20% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            40% {
-                opacity: 0.3;
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            90% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            100% {
-                opacity: 0.2;
-                transform: scale(1.2);
-            }
-        }
-
-        @-moz-keyframes blink {
-            0% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            20% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            40% {
-                opacity: 0.3;
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            90% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            100% {
-                opacity: 0.2;
-                transform: scale(1.2);
-            }
-        }
-
-        @-ms-keyframes blink {
-            0% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            20% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            40% {
-                opacity: 0.3;
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            90% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            100% {
-                opacity: 0.2;
-                transform: scale(1.2);
-            }
-        }
-
-        @-o-keyframes blink {
-            0% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            20% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            40% {
-                opacity: 0.3;
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            90% {
-                opacity: 1;
-                transform: scale(0.98);
-            }
-
-            100% {
-                opacity: 0.2;
-                transform: scale(1.2);
-            }
-        }
-
-        .botCenter {
-            position: fixed;
-            width: 100%;
-            height: 50px;
-            bottom: 2px;
-            line-height: 20px;
-            font-size: 12px;
-            text-align: center;
-            animation: botCenter 3s linear;
-            -webkit-animation: botCenter 3s linear;
-            -moz-animation: botCenter 3s linear;
-            -ms-animation: botCenter 3s linear;
-            -o-animation: botCenter 3s linear;
-        }
-
-        @keyframes botCenter {
-            0% {
-                opacity: 0;
-            }
-
-            20% {
-                opacity: 0;
-            }
-
-            40% {
-                opacity: 0.3;
-            }
-
-            80% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        @-webkit-keyframes botCenter {
-            0% {
-                opacity: 0;
-            }
-
-            20% {
-                opacity: 0;
-            }
-
-            40% {
-                opacity: 0.3;
-            }
-
-            80% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        @-moz-keyframes botCenter {
-            0% {
-                opacity: 0;
-            }
-
-            20% {
-                opacity: 0;
-            }
-
-            40% {
-                opacity: 0.3;
-            }
-
-            80% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        @-ms-keyframes botCenter {
-            0% {
-                opacity: 0;
-            }
-
-            20% {
-                opacity: 0;
-            }
-
-            40% {
-                opacity: 0.3;
-            }
-
-            80% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        @-o-keyframes botCenter {
-            0% {
-                opacity: 0;
-            }
-
-            20% {
-                opacity: 0;
-            }
-
-            40% {
-                opacity: 0.3;
-            }
-
-            80% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-    </style>
-<script>
-!function(p){"use strict";!function(t){var s=window,e=document,i=p,c="".concat("https:"===e.location.protocol?"https://":"http://","sdk.51.la/js-sdk-pro.min.js"),n=e.createElement("script"),r=e.getElementsByTagName("script")[0];n.type="text/javascript",n.setAttribute("charset","UTF-8"),n.async=!0,n.src=c,n.id="LA_COLLECT",i.d=n;var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:"K0VT9TniJGlt2OWO",ck:"K0VT9TniJGlt2OWO",autoTrack:true});
-</script>
+    <title>双倍快乐，有何不可 - 292999.xyz</title>
+    <link rel="stylesheet" href="../gogogo/sty.css">
+    <script src="../gogogo/jquery.min.js" type="text/javascript"></script>
 </head>
-
 <body>
-
-
-    <div class="blink">
-        <a href="" target="_blank"
-            title="点击此处可加大探索量">...<br>- 你将随机进入一篇文章 -</a>
-            
-    </div>
-    <script>
-    function jumpUrl(){
-        var arr = new Array(
-           
-"https://img.gejiba.com/images/66b6e94d5cf36597db0061f0c7d34ae3.jpg",
-"https://img.gejiba.com/images/435b20ca316adc0673d5fe9f002343e3.jpg",
-"https://img.gejiba.com/images/7c312828a72f4a319a1190b741c14605.jpg",
-"https://img.gejiba.com/images/7d6c69a152238193aab5783396378a3d.jpg",
-"https://img.gejiba.com/images/84d34cc25902c3048e7d28de6d1b1a2c.jpg",
-"https://img.gejiba.com/images/8ffd65debd8f7d670900ad7e29ce8d1b.jpg",
-"https://img.gejiba.com/images/74e8cc2f0997c85e7353048a6573f2cd.jpg",
-"https://img.gejiba.com/images/963a9686d0b1f44dae6b8e08a3f11622.jpg",
-"https://img.gejiba.com/images/8ff4aaedf1e3f32a4bbcdadffecf009b.jpg",
-"https://img.gejiba.com/images/bb63df0765030e0b0f00d34e05bdbcf9.jpg",
-"https://img.gejiba.com/images/ea9d2542ef67056c6a555f1f14973666.jpg",
-"https://img.gejiba.com/images/e8a6a04cff0fa2520821b6362d94fffd.jpg",
-"https://img.gejiba.com/images/ad79afe893300b6efebfed66b6802f21.jpg",
-"https://img.gejiba.com/images/a9c060f5c02e1dbdf92644dd7c7048aa.jpg",
-"https://img.gejiba.com/images/463af1fd45b9154da7e57e4f27493e59.jpg",
-"https://img.gejiba.com/images/819cb1df7c23346ba539c677a064ecf9.jpg",
-"https://img.gejiba.com/images/4a07decf4dff3c752e6d11497828923c.jpg",
-"https://img.gejiba.com/images/ad7310e9c6f48af786fa8e2166a4483a.jpg",
-"https://img.gejiba.com/images/0644661d012e0eb3cb85c829f18bb97b.jpg",
-"https://img.gejiba.com/images/489ffe6102a41847efa439731172b2bd.jpg",
-"https://img.gejiba.com/images/e2b021ed4925775f8dbd34c9dd6e16d8.jpg",
-"https://img.gejiba.com/images/ad9aabaebbc0e17a5d22c01d333bcde0.jpg",
-"https://img.gejiba.com/images/5518409f34e5bc8a544b45639964e156.jpg",
-"https://img.gejiba.com/images/a9f116d9b7468a0271081be6f5685e42.jpg",
-"https://img.gejiba.com/images/7b2858897b180c0fcac7a89f392ac31b.jpg",
-"https://img.gejiba.com/images/51413a030c46a90f57c3a8dfefd4c0d6.jpg",
-"https://img.gejiba.com/images/91d35e370ede2127bf2b761408549493.jpg",
-"https://img.gejiba.com/images/27535254caa58d481c1bd586777331a4.jpg",
-"https://img.gejiba.com/images/e6504e998f19b10dccf49a1e82a2d6ee.jpg",
-"https://img.gejiba.com/images/06959cb9972fb21a55917c5db297d7fa.jpg",
-"https://img.gejiba.com/images/f4c2e0de7008c3b369126bb2959ec0e5.jpg",
-"https://img.gejiba.com/images/ee7f7616d7186708bf467ad425f570a3.jpg",
-"https://img.gejiba.com/images/cf1042085f70870376c7812233b52c2e.jpg",
-"https://img.gejiba.com/images/750b93ffe0db93a63133c3405240b0cc.jpg",
-"https://img.gejiba.com/images/708f8751304c459806b09a0f5e5c5f24.jpg",
-"https://img.gejiba.com/images/143762d1e2824796cfd4bbb1606a0717.jpg",
-"https://img.gejiba.com/images/53651ca8624a485a727eba4a1253e534.jpg",
-"https://img.gejiba.com/images/217ecd65ae782586ae5698916bb2d6d4.jpg",
-          
-        );
-     window.location.href = arr[Math.floor(Math.random() * arr.length)];
-    }
     
-    setTimeout(function () {
-    jumpUrl();},2000);//设定跳转时间，1s=1000
+    <script>
+        $(function(){
+            /*公共部分
+            * 导航栏
+            */
+            // $(".headerpage").load("load/header.html");/*浏览器容易引起跨域问题*/
+            $(".toopp").load('../top.html');
+            $(".foodd").load('../fod.html');
+        });
     </script>
-<div class="all_bg"></div>
-</body>
 
+<div>
+<!-- 顶部专题 -->
+    <div class="toopp"></div>
+    <!--顶部专题 over-->
+
+    
+    
+
+<div class="box">
+    
+<div class="wx">
+    <h3>双倍快乐，有何不可</h3>
+    <img src="https://img.gejiba.com/images/a9f116d9b7468a0271081be6f5685e42.jpg"/>
+    <br>
+    随便看看吧
+    </div>
+
+
+<img src="https://img.gejiba.com/images/4638a85a3d97c0504c503f27293afe06.jpg" alt="[XiuRen] 2022.03.10 No.4702 一颗甜蛋黄a 49" border="0">
+<img src="https://img.gejiba.com/images/66b6e94d5cf36597db0061f0c7d34ae3.jpg" alt="[XiuRen] 2022.03.10 No.4702 一颗甜蛋黄a 56" border="0">
+<img src="https://img.gejiba.com/images/435b20ca316adc0673d5fe9f002343e3.jpg" alt="[XiuRen] 2022.03.10 No.4702 一颗甜蛋黄a 55" border="0">
+<img src="https://img.gejiba.com/images/7c312828a72f4a319a1190b741c14605.jpg" alt="[XiuRen] 2022.03.10 No.4702 一颗甜蛋黄a 54" border="0">
+    
+    </div>
+    
+    <!-- 底部专题 -->
+    <div class="foodd"></div>
+    <!--底部专题 over-->
+    </div>
+</body>
 </html>
