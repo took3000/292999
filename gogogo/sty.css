@@ -1,7 +1,8 @@
   .box {
 margin:4.2em 0 1em 0;
-	  column-count: 4;
-    column-width: 280px;
+	  columns: 4 300px;
+column-gap: 20px; /* 调整列宽 */
+column-rule: 2px dashed #00f; /* 边框 */
         }
 
  .Pox {
