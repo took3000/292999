@@ -1,6 +1,7 @@
   .box {
 margin:4.2em 0 1em 0;
-             column-width: 336px; // 宽度200px
+	  column-count: 2;
+    column-width: 168px;
         }
 
  .Pox {
