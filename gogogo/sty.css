@@ -105,6 +105,7 @@ margin-bottom:1em；margin-bottom:0.6em;border:2px solid #fff
 
 
 .foot{
+	width:100%;
 position: fixed;
     bottom: 0px;
 padding:1em;
