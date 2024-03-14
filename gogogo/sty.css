@@ -1,6 +1,6 @@
   .box {
 margin:4.2em 0 1em 0;
-	  columns: 4 300px;
+	  columns: 3 300px;
 column-gap: 20px; /* 调整列宽 */
 column-rule: 1px dashed #0000000d; /* 边框 */
         }
