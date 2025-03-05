@@ -99,6 +99,15 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(0.95); }
         }
+
+        .download-btn {
+    background: #2196F3; /* 蓝色区分 */
+    margin-top: 1rem;
+}
+
+.download-btn.copied {
+    background: #07C160; /* 保持成功状态绿色 */
+}
     </style>
 </head>
 <body>
@@ -115,6 +124,7 @@
                         <div class="tip-card">
                             <div class="tip-text">微信内看图体验受限，请复制链接到浏览器打开</div>
                             <button class="copy-btn" onclick="copyUrl(this)">点击复制链接</button>
+                            <button class="copy-btn download-btn" onclick="copyPdfUrl(this)">点击复制PDF链接</button>
                         </div>
                     </div>`;
                 document.body.prepend(tip);
@@ -251,6 +261,50 @@
                 }
             }
         }
+    </script>
+<script>
+    // 在JavaScript中添加处理函数
+function copyPdfUrl(btn) {
+    if (btn.classList.contains('copying')) return;
+    btn.classList.add('copying');
+    
+    // 获取PDF实际地址
+    const params = new URLSearchParams(location.search);
+    const pdfUrl = params.get('file') || '/uploads/default.pdf';
+
+    const success = () => {
+        btn.textContent = '✓ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '点击复制PDF链接';
+            btn.classList.remove('copied', 'copying');
+        }, 2000);
+    };
+
+    // 复用原有复制逻辑
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(pdfUrl)
+            .then(success)
+            .catch(() => fallbackCopy(pdfUrl));
+    } else {
+        fallbackCopy(pdfUrl);
+    }
+
+    function fallbackCopy(url) {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        try {
+            document.execCommand('copy');
+            success();
+        } catch (err) {
+            prompt('请手动复制PDF地址：', url);
+        } finally {
+            input.remove();
+        }
+    }
+}
     </script>
 </body>
 </html>
