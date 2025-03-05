@@ -155,8 +155,8 @@
                     <div class="wechat-overlay ${!isWechat ? 'default-overlay' : ''}">
                         <div class="tip-card ${!isWechat ? 'bottom-card' : ''}">
                             ${isWechat ? '<div class="tip-text">由于微信机制导致看图体验受限<br>请复制所需链接到浏览器打开</div>' : ''}
-                            <button class="copy-btn" onclick="copyUrl(this)">在线浏览PDF</button>
-                            <button class="copy-btn download-btn" onclick="copyPdfUrl(this)">直接下载PDF</button>
+                            <button class="copy-btn" onclick="copyUrl(this)">在线浏览链接</button>
+                            <button class="copy-btn download-btn" onclick="copyPdfUrl(this)">获取下载链接</button>
                         </div>
                     </div>`;
                 document.body.prepend(tip);
@@ -259,7 +259,7 @@
             const originalText = btn.textContent;
 
             const success = () => {
-                btn.textContent = '✓ 链接已复制';
+                btn.textContent = '✓ 复制成功';
                 btn.classList.add('copied');
                 setTimeout(() => {
                     btn.textContent = originalText;
@@ -317,7 +317,7 @@ function copyPdfUrl(btn) {
     const pdfUrl = getCorrectPdfUrl(); // 获取修正后的链接
 
     navigator.clipboard.writeText(pdfUrl).then(() => {
-        btn.textContent = '✓ 链接已复制';
+        btn.textContent = '✓ 复制成功';
         btn.classList.add('copied');
         setTimeout(() => {
             btn.textContent = '复制PDF直链';
@@ -331,7 +331,7 @@ function copyPdfUrl(btn) {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        btn.textContent = '✓ 已复制';
+        btn.textContent = '✓ 复制成功';
         btn.classList.add('copied');
     });
 }
