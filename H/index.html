@@ -103,7 +103,7 @@
   border: none;
   padding: 8px 20px;
   border-radius: 6px;
-  font-size: 1.5rem;
+  font-size: 2rem;
   cursor: pointer;
 }
 
@@ -113,7 +113,7 @@
   border: none;
   padding: 8px 20px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -121,6 +121,15 @@
 .copy-btn.copied {
   background: #1890ff;
   padding: 8px 15px;
+}
+
+        .copy-btn.copied {
+  animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.95); }
 }
         
     </style>
