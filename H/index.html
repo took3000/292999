@@ -108,6 +108,33 @@
 .download-btn.copied {
     background: #07C160; /* 保持成功状态绿色 */
 }
+
+/* 新增底部提示层样式 */
+        .wechat-overlay.default-overlay {
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .tip-card.bottom-card {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            padding: 1.5rem;
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tip-card.bottom-card .copy-btn {
+            margin: 0;
+            flex: 1;
+            max-width: 48%;
+        }
+        
     </style>
 </head>
 <body>
@@ -115,14 +142,15 @@
     <div id="pdf-container"></div>
 
     <script>
-        // 微信提示层初始化
+        // 修改后的微信提示层逻辑
         document.addEventListener('DOMContentLoaded', () => {
-            if (/MicroMessenger/i.test(navigator.userAgent)) {
+            const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+            if (isWechat || true) { // 这里始终显示提示层用于演示
                 const tip = document.createElement('div');
                 tip.innerHTML = `
-                    <div class="wechat-overlay">
-                        <div class="tip-card">
-                            <div class="tip-text">由于微信机制导致看图体验受限<br>请复制所需链接到浏览器打开</div>
+                    <div class="wechat-overlay ${!isWechat ? 'default-overlay' : ''}">
+                        <div class="tip-card ${!isWechat ? 'bottom-card' : ''}">
+                            ${isWechat ? '<div class="tip-text">由于微信机制导致看图体验受限<br>请复制所需链接到浏览器打开</div>' : ''}
                             <button class="copy-btn" onclick="copyUrl(this)">在线浏览PDF</button>
                             <button class="copy-btn download-btn" onclick="copyPdfUrl(this)">直接下载PDF</button>
                         </div>
@@ -130,6 +158,7 @@
                 document.body.prepend(tip);
             }
         });
+ 
 
         // PDF渲染核心逻辑
         (async function renderPDF() {
