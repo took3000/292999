@@ -5,7 +5,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
         :root {
-            font-size: 20px; /* 基础单位1rem=10px */
+            font-size: 20px;
         }
 
         * {
@@ -54,12 +54,10 @@
             height: 100%;
             z-index: 9999;
             backdrop-filter: blur(2.0rem);
-            -webkit-backdrop-filter: blur(2.0rem);
             background: rgba(255, 255, 255, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
-            pointer-events: none;
         }
 
         .tip-card {
@@ -67,7 +65,6 @@
             border-radius: 1.2rem;
             padding: 2.5rem;
             box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.15);
-            pointer-events: auto;
             max-width: 90%;
             text-align: center;
         }
@@ -87,30 +84,14 @@
             font-size: 1.4rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 6rem;
+            display: block;
+            width: 100%;
+            margin: 1rem 0;
         }
 
-        .copy-btn.copied {
-            background: #07C160;
-            animation: bounce 0.6s;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-        }
-
-        .download-btn {
-    background: #2196F3; /* 蓝色区分 */
-    margin-top: 1rem;
-}
-
-.download-btn.copied {
-    background: #07C160; /* 保持成功状态绿色 */
-}
-
-  /* 新增底部下载按钮样式 */
+        /* 下载按钮容器 */
         #download-footer {
+            display: none;
             position: fixed;
             bottom: 0;
             left: 0;
@@ -120,11 +101,10 @@
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             text-align: center;
-            display: none; /* 默认隐藏 */
         }
 
-        #download-footer.show {
-            display: block;
+        body:not(.wechat) #download-footer {
+            display: block !important;
         }
 
         .download-btn {
@@ -148,47 +128,112 @@
             background: #4CAF50;
         }
     </style>
-    
 </head>
 <body>
     <div id="loading">正在加载文档...</div>
     <div id="pdf-container"></div>
-    <!-- 新增下载按钮容器 -->
     <div id="download-footer">
-        <button class="download-btn" onclick="handleDownload()">下载PDF</button>
+        <button class="download-btn">下载PDF</button>
     </div>
 
     <script>
-        // 微信提示层初始化
+        // 环境检测
+        function isWechatBrowser() {
+            const ua = navigator.userAgent;
+            return /MicroMessenger/i.test(ua) && !/debug/i.test(ua);
+        }
+
+        // 统一PDF路径处理
+        function getCorrectPdfUrl() {
+            try {
+                const params = new URLSearchParams(location.search);
+                let filePath = params.get('file') || '';
+                
+                filePath = filePath
+                    .replace(/^\/+/, '')
+                    .replace(/^H\//, '')
+                    .replace(/(\.\.\/)+/g, '')
+                    .trim();
+
+                const encodedPath = encodeURIComponent(filePath)
+                    .replace(/%2F/g, '/')
+                    .replace(/%20/g, ' ');
+
+                return new URL(`/H/${encodedPath || 'default.pdf'}`, 'https://292999.xyz').href;
+            } catch (e) {
+                return 'https://292999.xyz/H/default.pdf';
+            }
+        }
+
+        // 初始化流程
         document.addEventListener('DOMContentLoaded', () => {
-            if (/MicroMessenger/i.test(navigator.userAgent)) {
+            // 微信环境处理
+            if (isWechatBrowser()) {
+                document.body.classList.add('wechat');
                 const tip = document.createElement('div');
                 tip.innerHTML = `
                     <div class="wechat-overlay">
                         <div class="tip-card">
                             <div class="tip-text">由于微信机制导致看图体验受限<br>请复制所需链接到浏览器打开</div>
-                            <button class="copy-btn" onclick="copyUrl(this)">在线浏览PDF</button>
-                            <button class="copy-btn download-btn" onclick="copyPdfUrl(this)">直接下载PDF</button>
+                            <button class="copy-btn" onclick="handleCopyUrl()">在线浏览PDF</button>
+                            <button class="copy-btn download-btn" onclick="handleCopyPdfUrl()">直接下载PDF</button>
                         </div>
                     </div>`;
                 document.body.prepend(tip);
             }
+            // 非微信环境初始化
+            else {
+                initDownloadButton();
+                renderPDF();
+            }
         });
 
-        // PDF渲染核心逻辑
-        (async function renderPDF() {
-            const loading = document.getElementById('loading');
-            const container = document.getElementById('pdf-container');
+        // 下载按钮初始化
+        function initDownloadButton() {
+            const footer = document.getElementById('download-footer');
+            const btn = footer.querySelector('.download-btn');
             
-            try {
-                // 获取PDF路径
-                const params = new URLSearchParams(location.search);
-                const pdfUrl = params.get('file') || '/uploads/default.pdf';
+            btn.onclick = handleDownload;
+            btn.textContent = '立即下载PDF';
+        }
 
+        // 下载处理
+        function handleDownload() {
+            const btn = document.querySelector('#download-footer .download-btn');
+            if (btn.dataset.loading === 'true') return;
+
+            btn.dataset.loading = 'true';
+            const originalText = btn.textContent;
+            btn.textContent = '正在准备下载...';
+
+            const pdfUrl = getCorrectPdfUrl();
+
+            // 标准下载方案
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = pdfUrl.split('/').pop();
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // 状态重置
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.dataset.loading = 'false';
+            }, 2000);
+        }
+
+        // PDF渲染逻辑
+        async function renderPDF() {
+            try {
+                const loading = document.getElementById('loading');
+                const container = document.getElementById('pdf-container');
+                
+                const pdfUrl = getCorrectPdfUrl();
+                
                 // 显示加载进度
                 loading.textContent = '正在加载文档 (0%)...';
 
-                // 初始化PDF文档
                 const pdfDoc = await pdfjsLib.getDocument({
                     url: pdfUrl,
                     cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/',
@@ -201,40 +246,34 @@
 
                 loading.remove();
 
-                // 逐页渲染
+                // 渲染页面
                 for (let i = 1; i <= pdfDoc.numPages; i++) {
                     const page = await pdfDoc.getPage(i);
                     const viewport = page.getViewport({ scale: 1 });
-                    
-                    // 计算适配宽度（使用px单位）
                     const maxWidth = window.innerWidth - 40; 
                     const scale = maxWidth / viewport.width;
                     const scaledViewport = page.getViewport({ scale });
 
-                    // 创建画布
                     const canvas = document.createElement('canvas');
                     canvas.className = 'page-canvas';
                     canvas.width = scaledViewport.width;
                     canvas.height = scaledViewport.height;
 
-                    // 渲染内容
                     await page.render({
                         canvasContext: canvas.getContext('2d'),
                         viewport: scaledViewport
                     }).promise;
 
-                    // 创建容器
                     const wrapper = document.createElement('div');
                     wrapper.className = 'page-wrapper';
                     wrapper.style.width = `${scaledViewport.width}px`;
                     wrapper.appendChild(canvas);
                     container.appendChild(wrapper);
 
-                    // 释放内存
                     await new Promise(resolve => requestAnimationFrame(resolve));
                 }
 
-                // 窗口resize处理
+                // 窗口重置处理
                 let resizeTimer;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimer);
@@ -245,274 +284,29 @@
                 });
 
             } catch(err) {
-                console.error('PDF加载失败:', err);
-                loading.innerHTML = `
+                document.getElementById('loading').innerHTML = `
                     <div style="color: red; text-align: center; padding: 2rem;">
-                        <h3 style="margin-bottom: 1rem;">文档加载失败</h3>
-                        <p style="color: #666;">错误类型：${err.name}</p>
-                        <p style="color: #666;">建议操作：</p>
-                        <ul style="text-align: left; margin: 1rem 0;">
-                            <li>• 检查网络连接</li>
-                            <li>• 确认链接有效性</li>
-                            <li>• 尝试刷新页面</li>
-                        </ul>
-                    </div>
-                `;
-            }
-        })();
-
-        // 复制功能
-        function copyUrl(btn) {
-            if (btn.classList.contains('copying')) return;
-            btn.classList.add('copying');
-            
-            const url = location.href;
-            const originalText = btn.textContent;
-
-            const success = () => {
-                btn.textContent = '✓ 链接已复制';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('copied', 'copying');
-                }, 2000);
-            };
-
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(url)
-                    .then(success)
-                    .catch(() => fallbackCopy());
-            } else {
-                fallbackCopy();
-            }
-
-            function fallbackCopy() {
-                const input = document.createElement('input');
-                input.value = url;
-                input.style.position = 'fixed';
-                document.body.appendChild(input);
-                input.select();
-                try {
-                    if (document.execCommand('copy')) {
-                        success();
-                    } else {
-                        throw new Error('复制失败');
-                    }
-                } catch (err) {
-                    prompt('请手动复制以下链接：', url);
-                } finally {
-                    input.remove();
-                }
-            }
-        }
-    </script>
-<script>
- // 修改PDF链接获取逻辑
-function getCorrectPdfUrl() {
-    const params = new URLSearchParams(location.search);
-    const filePath = params.get('file');
-    
-    // 关键修复：移除路径中的重复部分
-    if (filePath) {
-        const cleanPath = filePath.replace(/^\/?H\//, ''); // 清除可能存在的/H/前缀
-        return new URL(`/H/${cleanPath}`, window.location.origin).href;
-    }
-    return new URL('/H/default.pdf', window.location.origin).href;
-}
-
-// 修改后的复制函数
-function copyPdfUrl(btn) {
-    if (btn.classList.contains('copying')) return;
-    btn.classList.add('copying');
-    
-    const pdfUrl = getCorrectPdfUrl(); // 获取修正后的链接
-
-    navigator.clipboard.writeText(pdfUrl).then(() => {
-        btn.textContent = '✓ 链接已复制';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.textContent = '复制PDF直链';
-            btn.classList.remove('copied', 'copying');
-        }, 2000);
-    }).catch(() => {
-        // 兼容写法
-        const input = document.createElement('input');
-        input.value = pdfUrl;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        btn.textContent = '✓ 已复制';
-        btn.classList.add('copied');
-    });
-}
-    </script>
-
-
-
-    <script>
-    // 环境检测函数
-    function isWechatBrowser() {
-        const ua = navigator.userAgent;
-        return /MicroMessenger/i.test(ua) && !/debug/i.test(ua); // 排除开发者工具
-    }
-
-    // 修正PDF链接生成逻辑
-    function getCorrectPdfUrl() {
-        try {
-            const params = new URLSearchParams(location.search);
-            let filePath = params.get('file') || '';
-
-            // 路径清洗（兼容 /H/ 开头和直接文件名）
-            filePath = filePath
-                .replace(/^\/+/, '')     // 去除开头斜杠
-                .replace(/^H\//, '')     // 去除H/前缀
-                .replace(/(\.\.\/)+/g, '') // 防止路径穿越攻击
-                .trim();
-
-            // 安全编码处理
-            const encodedPath = encodeURIComponent(filePath)
-                .replace(/%2F/g, '/')    // 允许目录分隔符
-                .replace(/%20/g, ' ');   // 保留空格
-
-            return new URL(`/H/${encodedPath || 'default.pdf'}`, 'https://292999.xyz').href;
-        } catch (e) {
-            console.error('PDF路径解析失败:', e);
-            return 'https://292999.xyz/H/default.pdf';
-        }
-    }
-
-    // 智能下载处理器
-    function handleDownload() {
-        const btn = document.getElementById('download-btn');
-        if (!btn || btn.dataset.loading === 'true') return;
-
-        // 状态锁定
-        btn.dataset.loading = 'true';
-        const originalText = btn.textContent;
-        btn.textContent = '正在准备下载...';
-        
-        // 触觉反馈
-        if (window.navigator.vibrate) navigator.vibrate(50);
-
-        const pdfUrl = getCorrectPdfUrl();
-        let downloadSuccess = false;
-
-        // 方法1：标准下载
-        const virtualLink = document.createElement('a');
-        virtualLink.style.display = 'none';
-        virtualLink.href = pdfUrl;
-        virtualLink.download = pdfUrl.split('/').pop().split('#')[0].split('?')[0] || 'download.pdf';
-        document.body.appendChild(virtualLink);
-
-        virtualLink.click();
-        setTimeout(() => {
-            document.body.removeChild(virtualLink);
-        }, 100);
-
-        // 方法2：备用方案
-        const failTimer = setTimeout(() => {
-            if (!downloadSuccess) {
-                console.log('触发备用下载方案');
-                window.location.href = pdfUrl;
-            }
-        }, 2000);
-
-        // 成功检测（非100%可靠）
-        document.addEventListener('visibilitychange', function visibilityHandler() {
-            if (document.hidden) {
-                downloadSuccess = true;
-                document.removeEventListener('visibilitychange', visibilityHandler);
-                clearTimeout(failTimer);
-            }
-        });
-
-        // 状态重置
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.dataset.loading = 'false';
-            clearTimeout(failTimer);
-        }, 3000);
-    }
-
-    // 初始化下载按钮
-    function initDownloadButton() {
-        if (isWechatBrowser()) {
-            console.log('微信环境，隐藏下载按钮');
-            return;
-        }
-
-        // 动态创建更可靠的按钮
-        const footer = document.getElementById('download-footer');
-        if (!footer) {
-            footer = document.createElement('div');
-            footer.id = 'download-footer';
-            document.body.appendChild(footer);
-        }
-        
-        footer.innerHTML = `
-            <button id="download-btn" 
-                    class="download-btn" 
-                    onclick="handleDownload()"
-                    data-loading="false">
-                立即下载完整PDF
-            </button>
-        `;
-    }
-
-    // PDF渲染完成后初始化
-    async function renderPDF() {
-        try {
-            // 原有PDF渲染逻辑...
-            // 假设在渲染完成后调用：
-            const loading = document.getElementById('loading');
-            if (loading) loading.remove();
-
-            // 初始化下载按钮
-            initDownloadButton();
-            
-            // 性能监控
-            if ('connection' in navigator) {
-                const connection = navigator.connection;
-                if (connection.effectiveType === 'slow-2g') {
-                    console.log('慢速网络，禁用预加载');
-                }
-            }
-        } catch (err) {
-            console.error('PDF渲染失败:', err);
-            const container = document.getElementById('pdf-container');
-            if (container) {
-                container.innerHTML = `
-                    <div class="error-message">
                         <h3>文档加载失败</h3>
-                        <p>错误代码：${err.name || 'UNKNOWN_ERROR'}</p>
+                        <p>错误类型：${err.name}</p>
                         <button onclick="location.reload()">重新加载</button>
                     </div>
                 `;
             }
         }
-    }
 
-    // 启动流程
-    document.addEventListener('DOMContentLoaded', () => {
-        // 移动端触摸优化
-        if ('ontouchstart' in window) {
-            document.documentElement.style.touchAction = 'manipulation';
+        // 复制功能
+        function handleCopyUrl() {
+            navigator.clipboard.writeText(location.href)
+                .then(() => alert('页面链接已复制到剪贴板'))
+                .catch(() => prompt('请手动复制：', location.href));
         }
-        
-        renderPDF().catch(e => console.error('初始化异常:', e));
-    });
 
-    // 窗口重置处理
-    let resizeDebounce;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeDebounce);
-        resizeDebounce = setTimeout(() => {
-            const btn = document.getElementById('download-btn');
-            if (btn) btn.style.width = `${document.documentElement.clientWidth - 32}px`;
-        }, 300);
-    });
-</script>
-    
+        function handleCopyPdfUrl() {
+            const pdfUrl = getCorrectPdfUrl();
+            navigator.clipboard.writeText(pdfUrl)
+                .then(() => alert('PDF直链已复制到剪贴板'))
+                .catch(() => prompt('请手动复制：', pdfUrl));
+        }
+    </script>
 </body>
 </html>
