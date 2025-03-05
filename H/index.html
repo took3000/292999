@@ -106,6 +106,22 @@
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+.copy-btn {
+  background: #07c160;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.copy-btn.copied {
+  background: #1890ff;
+  padding: 8px 15px;
+}
         
     </style>
 
@@ -121,9 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="wechat-overlay">
   <!-- 可交互的提示卡片 -->
   <div class="tip-card">
-    <div class="tip-text">微信内预览体验受限，建议复制链接到浏览器打开</div>
-    <button class="copy-btn" onclick="copyUrl()">点击复制当前链接</button>
-  </div>
+  <div class="tip-text">微信内看图体验受限，请复制链接到浏览器打开：</div>
+  <button class="copy-btn" onclick="copyUrl(this)">点击复制链接</button>
+</div>
 </div>
            
         `
@@ -314,5 +330,53 @@ function showToast(msg, isError = false) {
         // 启动渲染
         renderPDF()
     </script>
+
+    <script>
+function copyUrl(btn) {
+  const url = window.location.href;
+  
+  // 添加防重复点击
+  if(btn.classList.contains('copying')) return;
+  btn.classList.add('copying');
+
+  const success = () => {
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '点击复制链接';
+      btn.classList.remove('copied', 'copying');
+    }, 2000);
+  };
+
+  const fail = () => {
+    prompt('请手动复制以下链接：', url);
+    btn.classList.remove('copying');
+  };
+
+  // 现代剪贴板API
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url)
+      .then(success)
+      .catch(fail);
+    return;
+  }
+
+  // 兼容旧方案
+  const input = document.createElement('input');
+  input.value = url;
+  input.style.position = 'fixed';
+  document.body.appendChild(input);
+  input.select();
+  
+  try {
+    document.execCommand('copy');
+    success();
+  } catch {
+    fail();
+  } finally {
+    document.body.removeChild(input);
+  }
+}
+</script>
 </body>
 </html>
