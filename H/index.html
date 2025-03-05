@@ -4,95 +4,109 @@
     <title>解锁成功 - 氢写真</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
-/* 微信提示层样式 */
-.wechat-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
-  pointer-events: none;
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  background: rgba(255, 255, 255, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.tip-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  pointer-events: auto;
-  max-width: 85%;
-  text-align: center;
-  transform: translateY(-10%);
-}
+        body {
+            background: #f0f0f0;
+            overflow: auto;
+        }
 
-.tip-text {
-  font-size: 1.4rem;
-  margin-bottom: 20px;
-  color: #333;
-  line-height: 1.5;
-  font-weight: 500;
-}
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            z-index: 1000;
+        }
 
-.copy-btn {
-  background: #07c160;
-  color: white;
-  border: none;
-  padding: 12px 35px;
-  border-radius: 30px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-block;
-  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.25);
-}
+        #pdf-container {
+            max-width: 100%;
+            padding: 20px 0;
+        }
 
-.copy-btn:hover {
-  background: #05a84d;
-  transform: translateY(-2px);
-}
+        .page-wrapper {
+            margin: 10px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: white;
+        }
 
-.copy-btn.copied {
-  background: #1890ff;
-  padding: 12px 30px;
-}
+        .page-canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
 
-/* PDF内容模糊处理 */
-.wechat-overlay + #pdf-container {
-  filter: blur(8px);
-  pointer-events: none;
-  user-select: none;
-}
+        /* 微信提示层样式 */
+        .wechat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            background: rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
 
-.copy-btn {
-  min-width: 120px; /* 防止文字变化时抖动 */
-  position: relative;
-  overflow: hidden;
-}
+        .tip-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            pointer-events: auto;
+            max-width: 85%;
+            text-align: center;
+            transform: translateY(-10%);
+        }
 
-.copy-btn::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255,255,255,0.2);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
+        .tip-text {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #333;
+            line-height: 1.5;
+            font-weight: 500;
+        }
 
-.copy-btn:active::after {
-  opacity: 1;
-}
-        
-</style>
+        .copy-btn {
+            background: #07c160;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-btn.copied {
+            background: #1890ff !important;
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+        }
+
+        /* 微信环境下PDF模糊效果 */
+        .wechat-overlay + #pdf-container {
+            filter: blur(8px);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
 </head>
 <body>
     <div id="loading">正在加载文档...</div>
@@ -114,34 +128,33 @@
             }
         });
 
-        // 修复后的PDF渲染逻辑
+        // PDF渲染逻辑
         (async () => {
             const loading = document.getElementById('loading');
             const container = document.getElementById('pdf-container');
             
             try {
-                // 1. 确保获取有效的PDF地址
                 const pdfUrl = new URLSearchParams(location.search).get('file') 
                              || '/uploads/default.pdf';
-                
-                // 2. 添加加载状态提示
+
+                // 显示加载进度
                 loading.textContent = '正在加载文档 (0%)...';
 
-                // 3. 带进度提示的PDF加载
+                // 加载PDF文档
                 const pdfDoc = await pdfjsLib.getDocument({
                     url: pdfUrl,
                     cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/',
                     cMapPacked: true,
                     progressData: (progress) => {
-                        // 更新加载进度
-                        loading.textContent = `正在加载文档 (${Math.round(progress.loaded / progress.total * 100)}%)...`;
+                        const percent = Math.round(progress.loaded / progress.total * 100);
+                        loading.textContent = `正在加载文档 (${percent}%)...`;
                     }
                 }).promise;
 
-                // 4. 加载完成后清除提示
+                // 移除加载提示
                 loading.remove();
 
-                // 5. 逐页渲染
+                // 逐页渲染
                 for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
                     const page = await pdfDoc.getPage(pageNum);
                     const viewport = page.getViewport({ scale: 1 });
@@ -154,7 +167,7 @@
                     canvas.height = scaledViewport.height;
                     canvas.width = scaledViewport.width;
 
-                    // 渲染到画布
+                    // 渲染PDF页面
                     await page.render({
                         canvasContext: canvas.getContext('2d'),
                         viewport: scaledViewport
@@ -166,20 +179,22 @@
                     wrapper.style.width = `${scaledViewport.width}px`;
                     wrapper.appendChild(canvas);
                     container.appendChild(wrapper);
+
+                    // 分帧渲染防止卡顿
+                    await new Promise(resolve => requestAnimationFrame(resolve));
                 }
 
-                // 6. 优化resize处理
+                // 窗口resize处理
                 let resizeTimer;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(() => {
                         container.innerHTML = '';
-                        this(); // 重新执行渲染函数
+                        this();
                     }, 300);
                 });
 
             } catch(err) {
-                // 7. 增强错误处理
                 console.error('PDF加载失败:', err);
                 loading.innerHTML = `
                     <div style="color: red; text-align: center;">
@@ -191,61 +206,86 @@
             }
         })();
 
+        // 复制功能
         function copyUrl(btn) {
-  if(btn._isAnimating) return;
-  btn._isAnimating = true;
-  
-  const originalText = btn.textContent;
-  const originalWidth = btn.offsetWidth;
-  
-  // 锁定按钮尺寸
-  btn.style.minWidth = `${originalWidth}px`;
-  
-  const success = () => {
-    btn.textContent = '✓ 已复制';
-    btn.classList.add('copied');
-    
-    // 添加波纹动画
-    const ripple = document.createElement('div');
-    ripple.style.cssText = `
-      position: absolute;
-      top: ${event.offsetY}px;
-      left: ${event.offsetX}px;
-      width: 0;
-      height: 0;
-      background: rgba(255,255,255,0.3);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      animation: ripple 0.6s ease-out;
-    `;
-    
-    btn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
+            if(btn.classList.contains('copying')) return;
+            btn.classList.add('copying');
+            
+            const originalText = btn.textContent;
+            const originalWidth = btn.offsetWidth;
+            const url = window.location.href;
 
-    // 3秒后恢复
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.classList.remove('copied');
-      btn.style.minWidth = '';
-      btn._isAnimating = false;
-    }, 2000);
-  };
+            // 锁定按钮尺寸
+            btn.style.minWidth = `${originalWidth}px`;
 
-  // 添加CSS动画
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes ripple {
-      to {
-        width: 200px;
-        height: 200px;
-        opacity: 0;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // 原有复制逻辑...
-}
+            const success = () => {
+                btn.textContent = '✓ 已复制';
+                btn.classList.add('copied');
+                
+                // 添加波纹动画
+                const event = window.event || {};
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    top: ${event.offsetY || 0}px;
+                    left: ${event.offsetX || 0}px;
+                    width: 0;
+                    height: 0;
+                    background: rgba(255,255,255,0.3);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                    animation: ripple 0.6s ease-out;
+                `;
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+
+                // 3秒后恢复状态
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied', 'copying');
+                    btn.style.minWidth = '';
+                }, 2000);
+            };
+
+            // 动态添加动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes ripple {
+                    to {
+                        width: 200px;
+                        height: 200px;
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // 执行复制操作
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url)
+                    .then(success)
+                    .catch(() => fallbackCopy(url));
+            } else {
+                fallbackCopy(url);
+            }
+
+            function fallbackCopy(text) {
+                const input = document.createElement('input');
+                input.value = text;
+                input.style.position = 'fixed';
+                document.body.appendChild(input);
+                input.select();
+                try {
+                    document.execCommand('copy');
+                    success();
+                } catch {
+                    prompt('请手动复制链接:', text);
+                    btn.classList.remove('copying');
+                } finally {
+                    input.remove();
+                }
+            }
+        }
     </script>
 </body>
 </html>
