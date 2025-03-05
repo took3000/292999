@@ -3,34 +3,132 @@
 <head>
     <title>PDF预览</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        body { margin: 20px; background: #f0f0f0; }
+        .page-container { 
+            background: white; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 20px;
+        }
+        #loading { 
+            text-align: center; 
+            padding: 30px;
+            font-size: 18px;
+        }
+    </style>
+
+
+    <!-- 在<head>中添加 -->
+<script>
+// 微信环境检测
+const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+
+// 微信中提示用户操作
+if (isWeChat) {
+    const tip = document.createElement('div');
+    tip.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 0;
+            background: #fff3cd;
+            padding: 15px;
+            width: 100%;
+            text-align: center;
+            border-bottom: 1px solid #ffeeba;
+            z-index: 1000;
+        ">
+            ⚠️ 微信内预览体验不佳，请点击右上角用浏览器打开
+        </div>
+    `;
+    document.body.prepend(tip);
+}
+</script>
 </head>
 <body>
-    <div id="pdf-container" style="width: 100%; height: 100vh;"></div>
+    <div id="loading">正在加载PDF文档...</div>
+    <div id="pdf-container"></div>
 
     <script>
-        // 从URL参数获取PDF路径
+        // 配置参数
+        const config = {
+            scale: 1.5,      // 初始缩放比例
+            margin: 20       // 页面间距
+        }
+
+        // 获取PDF文件路径
         const urlParams = new URLSearchParams(window.location.search);
-        const pdfUrl = urlParams.get('file');
+        const pdfUrl = urlParams.get('file') || '/uploads/default.pdf';
 
-        // 渲染PDF
-        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-            pdf.getPage(1).then(page => {
-                const scale = 1.5;
-                const viewport = page.getViewport({ scale });
+        // 初始化渲染
+        const renderPDF = async () => {
+            try {
+                const loading = document.getElementById('loading');
+                const container = document.getElementById('pdf-container');
+                
+                // 加载PDF文档
+                const pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+                loading.style.display = 'none';
 
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+                // 遍历所有页面
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    const page = await pdfDoc.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: config.scale });
 
-                document.getElementById('pdf-container').appendChild(canvas);
+                    // 创建画布容器
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'page-container';
+                    pageDiv.style.width = `${viewport.width}px`;
 
-                page.render({
-                    canvasContext: context,
-                    viewport: viewport
-                });
-            });
-        });
+                    // 创建画布元素
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // 渲染页面
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+
+                    // 添加到页面
+                    pageDiv.appendChild(canvas);
+                    container.appendChild(pageDiv);
+                }
+            } catch (err) {
+                console.error('PDF渲染失败:', err);
+                alert('文档加载失败，请检查链接是否正确');
+            }
+        }
+
+        // 启动渲染
+        renderPDF();
     </script>
+
+
+    <!-- 在body末尾添加控制按钮 -->
+<div style="position: fixed; right: 20px; bottom: 20px; background: white; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1)">
+    <button onclick="zoom(0.8)">缩小</button>
+    <button onclick="zoom(1.2)">放大</button>
+    <span id="page-info" style="margin: 0 10px"></span>
+</div>
+
+<script>
+    // 添加缩放功能
+    function zoom(factor) {
+        const pages = document.querySelectorAll('.page-container');
+        pages.forEach(page => {
+            const currentWidth = parseFloat(page.style.width);
+            page.style.width = `${currentWidth * factor}px`;
+        });
+    }
+
+    // 显示页码信息
+    pdfDoc.getMetadata().then(metadata => {
+        document.getElementById('page-info').innerHTML = 
+            `共 ${metadata.numPages} 页`;
+    });
+</script>
 </body>
 </html>
