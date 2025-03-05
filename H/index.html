@@ -73,8 +73,8 @@
   height: 100%;
   z-index: 9999;
   pointer-events: none; /* 关键属性：允许点击穿透 */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   background: rgba(255, 255, 255, 0.6);
 }
 
@@ -93,7 +93,7 @@
 
 .tip-text {
   color: #333;
-  font-size: 15px;
+  font-size: 2rem;
   margin-bottom: 8px;
 }
 
@@ -103,7 +103,7 @@
   border: none;
   padding: 8px 20px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 1.5rem;
   cursor: pointer;
 }
         
@@ -121,8 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="wechat-overlay">
   <!-- 可交互的提示卡片 -->
   <div class="tip-card">
-    <div class="tip-text">请复制链接到浏览器打开</div>
-    <button class="copy-btn" onclick="copyUrl()">点击复制链接</button>
+    <div class="tip-text">微信内预览体验受限，建议复制链接到浏览器打开</div>
+    <button class="copy-btn" onclick="copyUrl()">点击复制当前链接</button>
   </div>
 </div>
            
