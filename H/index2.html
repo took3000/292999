@@ -5,6 +5,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
         body { margin: 20px; background: #f0f0f0; }
+        .page-container { clear: both; }
         .page-container { 
             background: white; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -130,5 +131,12 @@ if (isWeChat) {
             `共 ${metadata.numPages} 页`;
     });
 </script>
+
+
+    <script>
+// 根据屏幕宽度自动调整缩放比例
+const isMobile = window.innerWidth < 768;
+config.scale = isMobile ? 1.0 : 1.5;
+        </script>
 </body>
 </html>
