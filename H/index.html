@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>解锁成功 - 公众号氢写真</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f0f0;
+        }
+        #pdf-container {
+            max-width: 100%;
+            padding: 20px 0;
+        }
+        .page-wrapper {
+            position: relative;
+            width: 100%;
+            margin: 10px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: white;
+        }
+        .page-canvas {
+            width: 100% !important;  /* 强制宽度自适应 */
+            height: auto !important;
+            display: block;
+            margin: 0 auto;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+        }
+    </style>
+
+  <script>
+// 微信环境检测与提示
+document.addEventListener('DOMContentLoaded', () => {
+    const isWeChat = /MicroMessenger/i.test(navigator.userAgent)
+    if (isWeChat) {
+        const tip = document.createElement('div')
+        tip.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                padding: 15px;
+                background: #fff3cd;
+                color: #856404;
+                text-align: center;
+                z-index: 9999;
+                border-bottom: 1px solid #ffeeba;
+            ">
+                ⚠️ 微信内预览体验受限，建议<a href="#" onclick="window.open(location.href)">点击此处</a>用浏览器打开
+            </div>
+        `
+        document.body.prepend(tip)
+    }
+})
+</script>
+</head>
+<body>
+    <div id="loading">正在加载文档...</div>
+    <div id="pdf-container"></div>
+
+    <script>
+        // 配置参数
+        const config = {
+            maxWidth: window.innerWidth - 40,  // 保留左右边距
+            pageSpacing: 20
+        }
+
+        // 获取PDF路径
+        const getPDFUrl = () => {
+            const params = new URLSearchParams(location.search)
+            return params.get('file') || '/uploads/default.pdf'
+        }
+
+        // 计算自适应缩放比例
+        const calculateScale = (pageWidth) => {
+            return config.maxWidth / pageWidth
+        }
+
+        // 渲染单页
+        const renderPage = async (page, container) => {
+            const viewport = page.getViewport({ scale: 1 })  // 先获取原始尺寸
+            const scale = calculateScale(viewport.width)
+            const scaledViewport = page.getViewport({ scale })
+
+            // 创建容器
+            const wrapper = document.createElement('div')
+            wrapper.className = 'page-wrapper'
+            wrapper.style.marginBottom = `${config.pageSpacing}px`
+
+            // 创建画布
+            const canvas = document.createElement('canvas')
+            canvas.className = 'page-canvas'
+            const context = canvas.getContext('2d')
+            
+            // 设置画布尺寸
+            canvas.height = scaledViewport.height
+            canvas.width = scaledViewport.width
+
+            // 渲染页面
+            await page.render({
+                canvasContext: context,
+                viewport: scaledViewport
+            }).promise
+
+            wrapper.appendChild(canvas)
+            container.appendChild(wrapper)
+        }
+
+        // 主渲染函数
+        const renderPDF = async () => {
+            try {
+                const container = document.getElementById('pdf-container')
+                const loading = document.getElementById('loading')
+                
+                // 加载PDF
+                const pdfDoc = await pdfjsLib.getDocument({
+                    url: getPDFUrl(),
+                    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/',
+                    cMapPacked: true
+                }).promise
+
+                loading.remove()
+
+                // 逐页渲染
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    const page = await pdfDoc.getPage(pageNum)
+                    await renderPage(page, container)
+                }
+
+                // 添加窗口resize监听
+                window.addEventListener('resize', () => {
+                    container.innerHTML = ''
+                    config.maxWidth = window.innerWidth - 40
+                    renderPDF()
+                })
+
+            } catch (err) {
+                console.error('PDF加载失败:', err)
+                alert('文档加载失败: ' + err.message)
+            }
+        }
+
+        // 启动渲染
+        renderPDF()
+    </script>
+</body>
+</html>
