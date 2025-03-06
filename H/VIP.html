@@ -247,7 +247,7 @@
                                 更新时间: ${pdf.updateDate}
                             </div>
                         </div>
-                        <a href="viewer.html?file=${encodeURIComponent(pdf.path)}" 
+                        <a href="?file=${encodeURIComponent(pdf.path)}" 
                            class="copy-btn" 
                            style="padding: 0.8rem 1.6rem; text-decoration: none;"
                            onclick="keepSession()">
@@ -285,7 +285,7 @@
                 return { 
                     name: name?.trim(), 
                     path: path?.trim(),
-                    updateDate: date?.trim() || '2024-03-20'
+                    updateDate: date?.trim() || '未知'
                 };
             }).filter(item => item.name && item.path);
         }
