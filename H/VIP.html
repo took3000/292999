@@ -2,8 +2,8 @@
 <html>
 <head>
     <title>文档库 - 氢写真</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* 复用微信提示框样式 */
         :root { font-size: 20px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #f0f0f0; font-size: 1.6rem; }
@@ -67,27 +67,130 @@
             margin-top: 1rem;
             font-size: 1.4rem;
         }
+
+        .pdf-grid {
+            display: grid;
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .pdf-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.2rem 0.8rem rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
     <!-- 授权验证界面 -->
     <div class="wechat-overlay" id="authOverlay">
         <div class="tip-card">
-            <div class="tip-text">🔒 请输入访问ID</div>
-            <input type="password" id="accessCode" class="auth-input" placeholder="输入您的ID">
+            <div class="tip-text">🔒 安全访问验证</div>
+            <input type="password" id="accessCode" class="auth-input" placeholder="输入8位访问码">
             <button class="copy-btn" onclick="handleAuth()">立即验证</button>
-            <div id="errorMsg" class="error-msg" style="display: none;">ID无效，请重试</div>
+            <div id="errorMsg" class="error-msg" style="display: none;"></div>
         </div>
     </div>
 
     <!-- 文档列表容器 -->
-    <div id="contentArea" style="display: none; padding: 2rem;">
-        <h1 style="text-align: center; margin-bottom: 2rem;">您的专属文档库</h1>
-        <div id="pdfContainer" style="display: grid; gap: 1.5rem;"></div>
+    <div id="contentArea" style="display: none;">
+        <h1 style="text-align: center; margin: 2rem 0;">您的专属文档库</h1>
+        <div class="pdf-grid" id="pdfContainer"></div>
     </div>
 
     <script>
-        // 加载有效ID列表
+        // 会话存储键名
+        const SESSION_KEY = 'auth_session';
+        const EXPIRE_TIME = 2 * 60 * 60 * 1000; // 2小时有效期
+
+        // 初始化验证状态
+        function initAuthState() {
+            const sessionData = sessionStorage.getItem(SESSION_KEY);
+            if (sessionData) {
+                const { token, timestamp } = JSON.parse(sessionData);
+                if (Date.now() - timestamp < EXPIRE_TIME) {
+                    showDocumentList();
+                    return;
+                }
+            }
+            showAuthInterface();
+        }
+
+        // 显示验证界面
+        function showAuthInterface() {
+            document.getElementById('authOverlay').style.display = 'flex';
+            document.getElementById('contentArea').style.display = 'none';
+        }
+
+        // 处理授权验证
+        async function handleAuth() {
+            const inputCode = document.getElementById('accessCode').value;
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.style.display = 'none';
+
+            try {
+                const validIDs = await loadIDs();
+                if (validIDs.includes(inputCode)) {
+                    // 存储会话信息
+                    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+                        token: btoa(inputCode),
+                        timestamp: Date.now()
+                    }));
+                    showDocumentList();
+                } else {
+                    throw new Error('访问码无效');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // 显示文档列表
+        async function showDocumentList() {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('contentArea').style.display = 'block';
+
+            const container = document.getElementById('pdfContainer');
+            container.innerHTML = ''; // 清空旧内容
+            
+            const pdfs = await loadPDFs();
+            pdfs.forEach(pdf => {
+                const card = document.createElement('div');
+                card.className = 'pdf-card';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500;">${pdf.name}</div>
+                            <div style="color: #666; font-size: 1.4rem;">
+                                更新时间: ${pdf.updateDate}
+                            </div>
+                        </div>
+                        <a href="${pdf.path}" 
+                           style="background: #07C160; color: white; padding: 0.8rem 1.6rem; border-radius: 2rem; text-decoration: none;"
+                           onclick="keepSession()">
+                            查看
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 保持会话活性
+        function keepSession() {
+            const sessionData = sessionStorage.getItem(SESSION_KEY);
+            if (sessionData) {
+                const data = JSON.parse(sessionData);
+                data.timestamp = Date.now();
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+            }
+        }
+
+        // 加载ID列表
         async function loadIDs() {
             const response = await fetch('ids.txt');
             return (await response.text()).split('\n').map(id => id.trim());
@@ -97,55 +200,22 @@
         async function loadPDFs() {
             const response = await fetch('pdfs.txt');
             return (await response.text()).split('\n').map(line => {
-                const [name, path] = line.split(',');
-                return { name: name?.trim(), path: path?.trim() };
+                const [name, path, date] = line.split(',');
+                return { 
+                    name: name?.trim(), 
+                    path: path?.trim(),
+                    updateDate: date?.trim() || '2024-03-20'
+                };
             }).filter(item => item.name && item.path);
         }
 
-        // 处理授权验证
-        async function handleAuth() {
-            const inputCode = document.getElementById('accessCode').value;
-            const errorEl = document.getElementById('errorMsg');
-            errorEl.style.display = 'none';
-
-            const validIDs = await loadIDs();
-            if (validIDs.includes(inputCode)) {
-                document.getElementById('authOverlay').style.display = 'none';
-                document.getElementById('contentArea').style.display = 'block';
-                showPDFList();
-            } else {
-                errorEl.style.display = 'block';
-            }
-        }
-
-        // 显示文档列表
-        async function showPDFList() {
-            const pdfs = await loadPDFs();
-            const container = document.getElementById('pdfContainer');
-
-            pdfs.forEach(pdf => {
-                const card = document.createElement('div');
-                card.style.background = '#fff';
-                card.style.padding = '1.5rem';
-                card.style.borderRadius = '1rem';
-                card.style.boxShadow = '0 0.2rem 0.8rem rgba(0,0,0,0.1)';
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 500;">${pdf.name}</div>
-                            <div style="color: #666; font-size: 1.4rem;">
-                                更新时间: 2024-03-20
-                            </div>
-                        </div>
-                        <a href="${pdf.path}" 
-                           style="background: #07C160; color: white; padding: 0.8rem 1.6rem; border-radius: 2rem; text-decoration: none;">
-                            查看
-                        </a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', initAuthState);
+        
+        // 处理浏览器后退
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) initAuthState();
+        });
     </script>
 </body>
 </html>
