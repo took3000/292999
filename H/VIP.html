@@ -1,217 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>安全文档库 - 氢写真</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档库</title>
     <style>
-        /* 复用微信提示样式 */
-        :root { font-size: 20px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #f0f0f0; font-size: 1.6rem; }
-
-        .wechat-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            backdrop-filter: blur(2rem);
-            background: rgba(255,255,255,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .tip-card {
-            background: white;
-            border-radius: 1.2rem;
-            padding: 2.5rem;
-            box-shadow: 0 0.8rem 2.4rem rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .tip-text {
-            font-size: 1.8rem;
-            margin-bottom: 2rem;
-            color: #333;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 1.2rem;
-            margin: 1.5rem 0;
-            border: 1px solid #ddd;
-            border-radius: 0.8rem;
-            font-size: 1.6rem;
-        }
-
-        .copy-btn {
-            background: #000;
-            color: white;
-            border: none;
-            padding: 1.2rem 1.8rem;
-            border-radius: 3rem;
-            font-size: 1.4rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        /* PDF列表样式 */
-        .pdf-grid {
-            display: grid;
-            gap: 1.5rem;
-            padding: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .pdf-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 0.2rem 0.8rem rgba(0,0,0,0.1);
-        }
-
-        .pdf-link {
-            color: #07C160;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.8rem;
-        }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+        .auth-box { padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input { padding: 8px; margin: 10px 0; width: 200px; }
+        button { background: #07C160; color: white; border: none; padding: 8px 16px; border-radius: 4px; }
+        .pdf-list { margin-top: 20px; }
+        .pdf-item { margin: 10px 0; }
     </style>
 </head>
 <body>
-    <!-- 授权验证界面 -->
-    <div id="authOverlay" class="wechat-overlay" style="display: none;">
-        <div class="tip-card">
-            <div class="tip-text">请输入安全访问码</div>
-            <input type="password" id="accessCode" class="auth-input" placeholder="输入8位访问码">
-            <button class="copy-btn" onclick="handleAuth()">验证身份</button>
-            <div id="authError" style="color: #FF4444; margin-top: 1rem; display: none;"></div>
-        </div>
+    <div id="authSection" class="auth-box">
+        <h3>请输入访问ID</h3>
+        <input type="text" id="inputId" placeholder="输入您的ID">
+        <button onclick="checkAccess()">进入</button>
+        <div id="errorMsg" style="color:red;display:none;margin-top:10px;"></div>
     </div>
 
-    <!-- 文档列表容器 -->
-    <div id="contentArea" style="display: none;">
-        <h1 style="text-align: center; margin: 2rem 0;">您的专属文档库</h1>
-        <div class="pdf-grid" id="pdfContainer"></div>
+    <div id="pdfSection" class="pdf-list" style="display:none;">
+        <h2>可用文档</h2>
+        <div id="pdfContainer"></div>
     </div>
-
-    <!-- 加载提示 -->
-    <div id="loading">正在验证权限...</div>
 
     <script>
-        // 初始化验证
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(location.search);
-            const accessToken = urlParams.get('token');
+        // 加载有效ID列表
+        async function loadIDs() {
+            const response = await fetch('ids.txt');
+            return (await response.text()).split('\n').map(id => id.trim());
+        }
 
-            if (accessToken) {
-                checkTokenValidity(accessToken);
+        // 加载PDF列表
+        async function loadPDFs() {
+            const response = await fetch('pdfs.txt');
+            return (await response.text()).split('\n').map(line => {
+                const [name, path] = line.split(',');
+                return { name: name?.trim(), path: path?.trim() };
+            }).filter(item => item.name && item.path);
+        }
+
+        // 验证访问权限
+        async function checkAccess() {
+            const inputId = document.getElementById('inputId').value;
+            const validIDs = await loadIDs();
+            const errorEl = document.getElementById('errorMsg');
+
+            if (validIDs.includes(inputId)) {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('pdfSection').style.display = 'block';
+                showPDFList();
             } else {
-                showAuthInterface();
-            }
-        });
-
-        // 显示验证界面
-        function showAuthInterface() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-
-        // 处理授权验证
-        async function handleAuth() {
-            const code = document.getElementById('accessCode').value;
-            document.getElementById('authError').style.display = 'none';
-
-            if (!/^\d{8}$/.test(code)) {
-                showAuthError('访问码格式不正确');
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/verify?code=${encodeURIComponent(code)}`);
-                const { valid, token } = await response.json();
-
-                if (valid) {
-                    window.location.search = `?token=${token}`;
-                } else {
-                    showAuthError('访问码无效或已过期');
-                }
-            } catch (error) {
-                showAuthError('网络连接异常，请重试');
+                errorEl.textContent = 'ID无效，请重试';
+                errorEl.style.display = 'block';
             }
         }
 
-        // 显示错误提示
-        function showAuthError(message) {
-            const errorEl = document.getElementById('authError');
-            errorEl.textContent = message;
-            errorEl.style.display = 'block';
-        }
-
-        // Token有效性检查
-        async function checkTokenValidity(token) {
-            try {
-                const response = await fetch(`/api/validate?token=${token}`);
-                const { valid, files } = await response.json();
-
-                if (valid) {
-                    initDocumentList(files, token);
-                } else {
-                    showAuthInterface();
-                }
-            } catch (error) {
-                showAuthError('服务器连接失败');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-
-        // 初始化文档列表
-        function initDocumentList(files, token) {
-            document.getElementById('contentArea').style.display = 'block';
+        // 显示文档列表
+        async function showPDFList() {
+            const pdfs = await loadPDFs();
             const container = document.getElementById('pdfContainer');
-
-            files.forEach(file => {
-                const card = document.createElement('div');
-                card.className = 'pdf-card';
-                card.innerHTML = `
-                    <a class="pdf-link" 
-                       href="/viewer.html?token=${token}&file=${encodeURIComponent(file.path)}"
-                       target="_blank">
-                        ${file.name}
-                    </a>
-                    <div style="color: #666; margin-top: 0.5rem;">
-                        ${formatFileSize(file.size)} | 最后更新: ${file.updateTime}
-                    </div>
+            
+            pdfs.forEach(pdf => {
+                const div = document.createElement('div');
+                div.className = 'pdf-item';
+                div.innerHTML = `
+                    <a href="${pdf.path}" target="_blank">${pdf.name}</a>
                 `;
-                container.appendChild(card);
+                container.appendChild(div);
             });
-        }
-
-        // 文件大小格式化
-        function formatFileSize(bytes) {
-            const units = ['B', 'KB', 'MB', 'GB'];
-            let size = bytes;
-            let unitIndex = 0;
-            
-            while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024;
-                unitIndex++;
-            }
-            
-            return `${size.toFixed(1)} ${units[unitIndex]}`;
         }
     </script>
 </body>
