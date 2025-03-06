@@ -1,27 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>文档库</title>
+    <title>文档库 - 氢写真</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
-        .auth-box { padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        input { padding: 8px; margin: 10px 0; width: 200px; }
-        button { background: #07C160; color: white; border: none; padding: 8px 16px; border-radius: 4px; }
-        .pdf-list { margin-top: 20px; }
-        .pdf-item { margin: 10px 0; }
+        /* 复用微信提示框样式 */
+        :root { font-size: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f0f0f0; font-size: 1.6rem; }
+
+        .wechat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(2rem);
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tip-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 2.5rem;
+            box-shadow: 0 0.8rem 2.4rem rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .tip-text {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border: 1px solid #ddd;
+            border-radius: 0.8rem;
+            font-size: 1.6rem;
+        }
+
+        .copy-btn {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 1.2rem 1.8rem;
+            border-radius: 3rem;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: #07C160;
+        }
+
+        .error-msg {
+            color: #FF4444;
+            margin-top: 1rem;
+            font-size: 1.4rem;
+        }
     </style>
 </head>
 <body>
-    <div id="authSection" class="auth-box">
-        <h3>请输入访问ID</h3>
-        <input type="text" id="inputId" placeholder="输入您的ID">
-        <button onclick="checkAccess()">进入</button>
-        <div id="errorMsg" style="color:red;display:none;margin-top:10px;"></div>
+    <!-- 授权验证界面 -->
+    <div class="wechat-overlay" id="authOverlay">
+        <div class="tip-card">
+            <div class="tip-text">🔒 请输入访问ID</div>
+            <input type="password" id="accessCode" class="auth-input" placeholder="输入您的ID">
+            <button class="copy-btn" onclick="handleAuth()">立即验证</button>
+            <div id="errorMsg" class="error-msg" style="display: none;">ID无效，请重试</div>
+        </div>
     </div>
 
-    <div id="pdfSection" class="pdf-list" style="display:none;">
-        <h2>可用文档</h2>
-        <div id="pdfContainer"></div>
+    <!-- 文档列表容器 -->
+    <div id="contentArea" style="display: none; padding: 2rem;">
+        <h1 style="text-align: center; margin-bottom: 2rem;">您的专属文档库</h1>
+        <div id="pdfContainer" style="display: grid; gap: 1.5rem;"></div>
     </div>
 
     <script>
@@ -40,18 +102,18 @@
             }).filter(item => item.name && item.path);
         }
 
-        // 验证访问权限
-        async function checkAccess() {
-            const inputId = document.getElementById('inputId').value;
-            const validIDs = await loadIDs();
+        // 处理授权验证
+        async function handleAuth() {
+            const inputCode = document.getElementById('accessCode').value;
             const errorEl = document.getElementById('errorMsg');
+            errorEl.style.display = 'none';
 
-            if (validIDs.includes(inputId)) {
-                document.getElementById('authSection').style.display = 'none';
-                document.getElementById('pdfSection').style.display = 'block';
+            const validIDs = await loadIDs();
+            if (validIDs.includes(inputCode)) {
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('contentArea').style.display = 'block';
                 showPDFList();
             } else {
-                errorEl.textContent = 'ID无效，请重试';
                 errorEl.style.display = 'block';
             }
         }
@@ -60,14 +122,28 @@
         async function showPDFList() {
             const pdfs = await loadPDFs();
             const container = document.getElementById('pdfContainer');
-            
+
             pdfs.forEach(pdf => {
-                const div = document.createElement('div');
-                div.className = 'pdf-item';
-                div.innerHTML = `
-                    <a href="${pdf.path}" target="_blank">${pdf.name}</a>
+                const card = document.createElement('div');
+                card.style.background = '#fff';
+                card.style.padding = '1.5rem';
+                card.style.borderRadius = '1rem';
+                card.style.boxShadow = '0 0.2rem 0.8rem rgba(0,0,0,0.1)';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500;">${pdf.name}</div>
+                            <div style="color: #666; font-size: 1.4rem;">
+                                更新时间: 2024-03-20
+                            </div>
+                        </div>
+                        <a href="${pdf.path}" 
+                           style="background: #07C160; color: white; padding: 0.8rem 1.6rem; border-radius: 2rem; text-decoration: none;">
+                            查看
+                        </a>
+                    </div>
                 `;
-                container.appendChild(div);
+                container.appendChild(card);
             });
         }
     </script>
