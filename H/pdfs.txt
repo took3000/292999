@@ -1,4 +1,3 @@
-3D2D20xx250304,88.pdf
-4D20250cx304,/88.pdf
-3D202fd50304,H/88.pdf
-2ed,https://292999.xyz/H?file=/H/88.pdf
+技术文档,https://huaban.com/search?q=%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%AE%A3%E4%BC%A0&sort=all&type=pin&filter_ids=ratio-5342747.5342752.5342774%7Ecolors-5342747.5342751.5342763,2024-03-20
+用户指南,https://292999.xyz/H?file=/H/88.pdf,2024-03-18
+年度报告,/H/88.pdf,2024-02-28  # 也支持相对路径
