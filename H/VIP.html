@@ -1,72 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PDF文件库</title>
+    <title>PDF资源库 - 安全访问</title>
+    <!-- 复用微信提示框CSS -->
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .pdf-link { display: block; margin: 10px 0; color: #1a0dab; }
-        .error { color: red; }
+        /* 此处直接复用原有.wechat-overlay、.tip-card等样式 */
+        .wechat-input {
+            width: 80%; 
+            padding: 12px; 
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
-    <div id="loading">权限验证中...</div>
-    <div id="content" style="display: none;">
-        <h1>您的专属PDF库</h1>
-        <div id="pdf-list"></div>
-    </div>
-    <div id="error" class="error" style="display: none;"></div>
+    <div id="auth-overlay"></div>
+    <div id="pdf-list" style="display:none;"></div>
 
     <script>
-        // 有效ID列表（示例数据）
-        const VALID_IDS = new Set([
-            'deepseek',
-            'user2024',
-            'vip888'
-        ]);
+        // 初始化时隐藏内容
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = new URLSearchParams(location.search).get('token');
+            if (!token) showAuthDialog();
+            else loadData(token);
+        });
 
-        // 初始化验证
-        function init() {
-            const params = new URLSearchParams(location.search);
-            const userId = params.get('id');
-
-            // 验证逻辑
-            if (userId && VALID_IDS.has(userId)) {
-                loadPDFList(userId);
-                document.getElementById('content').style.display = 'block';
-                document.getElementById('loading').style.display = 'none';
-            } else {
-                showError('无效的用户ID或未提供授权标识');
+        async function loadData(token) {
+            try {
+                const { pdfList } = await fetch(`/api/pdf-list?token=${token}`).then(res => res.json());
+                renderPDFList(pdfList); // 动态生成文档列表
+            } catch (err) {
+                showError('资源加载失败，请检查网络');
             }
         }
 
-        // 加载PDF列表
-        function loadPDFList(userId) {
-            // 示例PDF列表（实际可从服务器获取）
-            const pdfList = [
-                { name: '技术手册.pdf', path: '/files/tech.pdf' },
-                { name: '年度报告.pdf', path: '/files/report.pdf' },
-                { name: '使用指南.pdf', path: '/files/guide.pdf' }
-            ];
-
+        function renderPDFList(list) {
             const container = document.getElementById('pdf-list');
-            pdfList.forEach(pdf => {
-                const link = document.createElement('a');
-                link.className = 'pdf-link';
-                link.href = `/viewer.html?file=${encodeURIComponent(pdf.path)}&id=${userId}`;
-                link.textContent = pdf.name;
-                container.appendChild(link);
+            list.forEach(pdf => {
+                const card = document.createElement('div');
+                card.className = 'page-wrapper'; // 复用PDF卡片样式
+                card.innerHTML = `
+                    <h3>${pdf.name}</h3>
+                    <a href="/viewer.html?token=${getToken()}&file=${encodeURI(pdf.path)}" 
+                       class="copy-btn download-btn">查看文档</a>
+                `;
+                container.appendChild(card);
             });
         }
-
-        // 错误处理
-        function showError(msg) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('error').textContent = msg;
-            document.getElementById('error').style.display = 'block';
-        }
-
-        // 启动验证
-        init();
     </script>
 </body>
 </html>
