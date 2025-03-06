@@ -163,13 +163,13 @@
                         
                         <!-- 微信环境保持原按钮 -->
                         ${isWechat ? `
-                            <a href="/H/VIP.html" download class="copy-btn download-btn" style="text-decoration:none" style="border-color: #999;color:#666">看看别的</a>
+                            <a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzk0OTUyNzcyOA==&action=getalbum&album_id=3876886696209596418&scene=126#wechat_redirect" download class="copy-btn download-btn" style="text-decoration:none" style="border-color: #999;color:#666">订阅最新</a>
                             <button class="copy-btn download-btn" onclick="copyPdfUrl(this)">下载链接</button>
                             <button class="copy-btn" onclick="copyUrl(this)">浏览链接</button>
                         ` : `
                             <!-- 非微信环境修改按钮 -->
 
-                            <a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzk0OTUyNzcyOA==&action=getalbum&album_id=3876886696209596418&scene=126#wechat_redirect" download class="copy-btn download-btn" style="text-decoration:none">订阅最新</a>
+                            <a href="/H/VIP.html" download class="copy-btn download-btn" style="text-decoration:none">返回列表</a>
                             <a href="${pdfUrl}" download class="copy-btn download-btn" style="text-decoration:none">存为PDF</a>
                             <button class="copy-btn" onclick="copyUrl(this)">发给兄弟</button>
                         `}
