@@ -8,6 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #f0f0f0; font-size: 1.6rem; }
 
+        /* 授权弹窗样式 */
         .wechat-overlay {
             position: fixed;
             top: 0;
@@ -19,6 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
 
         .tip-card {
@@ -68,12 +70,14 @@
             font-size: 1.4rem;
         }
 
+        /* 文档列表样式 */
         .pdf-grid {
             display: grid;
             gap: 1.5rem;
             padding: 2rem;
             max-width: 800px;
             margin: 0 auto;
+            padding-bottom: 6rem; /* 为底部按钮留出空间 */
         }
 
         .pdf-card {
@@ -82,10 +86,35 @@
             padding: 1.5rem;
             box-shadow: 0 0.2rem 0.8rem rgba(0,0,0,0.1);
         }
+
+        /* 底部操作区 */
+        .bottom-actions {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 100%;
+        }
+
+        .secondary-btn {
+            background: none;
+            border: 1px solid #07C160;
+            color: #07C160;
+            padding: 0.8rem 2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.4rem;
+        }
+
+        .secondary-btn:hover {
+            background: #07C16022;
+        }
     </style>
 </head>
 <body>
-    <!-- 授权验证界面 -->
+    <!-- 主验证弹窗 -->
     <div class="wechat-overlay" id="authOverlay">
         <div class="tip-card">
             <div class="tip-text">🔒 安全访问验证</div>
@@ -99,14 +128,8 @@
     <div id="contentArea" style="display: none;">
         <h1 style="text-align: center; margin: 2rem 0;">您的专属文档库</h1>
         <div class="pdf-grid" id="pdfContainer"></div>
-    </div>
 
-<!-- 文档列表容器 -->
-    <div id="contentArea" style="display: none;">
-        <h1 style="text-align: center; margin: 2rem 0;">您的专属文档库</h1>
-        <div class="pdf-grid" id="pdfContainer"></div>
-
-        <!-- 新增底部操作区 -->
+        <!-- 底部切换按钮 -->
         <div class="bottom-actions">
             <button class="secondary-btn" onclick="showReauthDialog()">
                 切换其他验证ID
@@ -114,7 +137,7 @@
         </div>
     </div>
 
-    <!-- 新增重新验证弹窗 -->
+    <!-- 重新验证弹窗 -->
     <div id="reauthDialog" class="wechat-overlay" style="display: none;">
         <div class="tip-card">
             <div class="tip-text">🔑 输入新验证ID</div>
@@ -125,81 +148,42 @@
     </div>
 
     <script>
-        // 新增重新验证处理逻辑
-        function showReauthDialog() {
-            document.getElementById('reauthDialog').style.display = 'flex';
-            document.getElementById('newAccessCode').focus();
-        }
-
-        async function handleReauth() {
-            const newCode = document.getElementById('newAccessCode').value;
-            const errorEl = document.getElementById('reauthError');
-            errorEl.style.display = 'none';
-
-            try {
-                const validIDs = await loadIDs();
-                if (validIDs.includes(newCode)) {
-                    // 清除旧会话
-                    sessionStorage.removeItem(SESSION_KEY);
-                    // 存储新会话
-                    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-                        token: btoa(newCode),
-                        timestamp: Date.now()
-                    }));
-                    location.reload(); // 刷新页面应用新权限
-                } else {
-                    throw new Error('ID无效，请重试');
-                }
-            } catch (error) {
-                errorEl.textContent = error.message;
-                errorEl.style.display = 'block';
-            }
-        }
-
-        // 在原有代码末尾添加事件监听
-        document.getElementById('reauthDialog').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('reauthDialog')) {
-                e.target.style.display = 'none';
-            }
-        });
-    </script>
-
-    
-
-    <script>
-        // 会话存储键名
-        const SESSION_KEY = 'auth_session';
+        // 会话管理配置
+        const SESSION_KEY = 'doc_access_session';
         const EXPIRE_TIME = 2 * 60 * 60 * 1000; // 2小时有效期
 
         // 初始化验证状态
         function initAuthState() {
             const sessionData = sessionStorage.getItem(SESSION_KEY);
             if (sessionData) {
-                const { token, timestamp } = JSON.parse(sessionData);
-                if (Date.now() - timestamp < EXPIRE_TIME) {
-                    showDocumentList();
-                    return;
+                try {
+                    const { token, timestamp } = JSON.parse(sessionData);
+                    if (Date.now() - timestamp < EXPIRE_TIME) {
+                        showDocumentList();
+                        return;
+                    }
+                } catch(e) {
+                    sessionStorage.removeItem(SESSION_KEY);
                 }
             }
             showAuthInterface();
         }
 
-        // 显示验证界面
+        // 显示主验证界面
         function showAuthInterface() {
             document.getElementById('authOverlay').style.display = 'flex';
             document.getElementById('contentArea').style.display = 'none';
         }
 
-        // 处理授权验证
+        // 主验证逻辑
         async function handleAuth() {
-            const inputCode = document.getElementById('accessCode').value;
+            const inputCode = document.getElementById('accessCode').value.trim();
             const errorEl = document.getElementById('errorMsg');
             errorEl.style.display = 'none';
 
             try {
                 const validIDs = await loadIDs();
                 if (validIDs.includes(inputCode)) {
-                    // 存储会话信息
                     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
                         token: btoa(inputCode),
                         timestamp: Date.now()
@@ -214,13 +198,42 @@
             }
         }
 
+        // 显示重新验证弹窗
+        function showReauthDialog() {
+            document.getElementById('reauthDialog').style.display = 'flex';
+            document.getElementById('newAccessCode').focus();
+        }
+
+        // 处理重新验证
+        async function handleReauth() {
+            const newCode = document.getElementById('newAccessCode').value.trim();
+            const errorEl = document.getElementById('reauthError');
+            errorEl.style.display = 'none';
+
+            try {
+                const validIDs = await loadIDs();
+                if (validIDs.includes(newCode)) {
+                    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+                        token: btoa(newCode),
+                        timestamp: Date.now()
+                    }));
+                    location.reload();
+                } else {
+                    throw new Error('ID无效，请重试');
+                }
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+            }
+        }
+
         // 显示文档列表
         async function showDocumentList() {
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('contentArea').style.display = 'block';
 
             const container = document.getElementById('pdfContainer');
-            container.innerHTML = ''; // 清空旧内容
+            container.innerHTML = '';
             
             const pdfs = await loadPDFs();
             pdfs.forEach(pdf => {
@@ -234,8 +247,9 @@
                                 更新时间: ${pdf.updateDate}
                             </div>
                         </div>
-                        <a href="${pdf.path}" 
-                           style="background: #07C160; color: white; padding: 0.8rem 1.6rem; border-radius: 2rem; text-decoration: none;"
+                        <a href="viewer.html?file=${encodeURIComponent(pdf.path)}" 
+                           class="copy-btn" 
+                           style="padding: 0.8rem 1.6rem; text-decoration: none;"
                            onclick="keepSession()">
                             查看
                         </a>
@@ -258,13 +272,15 @@
         // 加载ID列表
         async function loadIDs() {
             const response = await fetch('ids.txt');
-            return (await response.text()).split('\n').map(id => id.trim());
+            const text = await response.text();
+            return text.split('\n').map(id => id.trim()).filter(Boolean);
         }
 
         // 加载PDF列表
         async function loadPDFs() {
             const response = await fetch('pdfs.txt');
-            return (await response.text()).split('\n').map(line => {
+            const text = await response.text();
+            return text.split('\n').map(line => {
                 const [name, path, date] = line.split(',');
                 return { 
                     name: name?.trim(), 
@@ -274,12 +290,19 @@
             }).filter(item => item.name && item.path);
         }
 
-        // 页面初始化
+        // 初始化
         document.addEventListener('DOMContentLoaded', initAuthState);
         
-        // 处理浏览器后退
+        // 处理页面恢复
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) initAuthState();
+        });
+
+        // 点击弹窗外部关闭
+        document.getElementById('reauthDialog').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('reauthDialog')) {
+                e.target.style.display = 'none';
+            }
         });
     </script>
 </body>
