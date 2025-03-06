@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF文件库</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .pdf-link { display: block; margin: 10px 0; color: #1a0dab; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div id="loading">权限验证中...</div>
+    <div id="content" style="display: none;">
+        <h1>您的专属PDF库</h1>
+        <div id="pdf-list"></div>
+    </div>
+    <div id="error" class="error" style="display: none;"></div>
+
+    <script>
+        // 有效ID列表（示例数据）
+        const VALID_IDS = new Set([
+            'deepseek',
+            'user2024',
+            'vip888'
+        ]);
+
+        // 初始化验证
+        function init() {
+            const params = new URLSearchParams(location.search);
+            const userId = params.get('id');
+
+            // 验证逻辑
+            if (userId && VALID_IDS.has(userId)) {
+                loadPDFList(userId);
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            } else {
+                showError('无效的用户ID或未提供授权标识');
+            }
+        }
+
+        // 加载PDF列表
+        function loadPDFList(userId) {
+            // 示例PDF列表（实际可从服务器获取）
+            const pdfList = [
+                { name: '技术手册.pdf', path: '/files/tech.pdf' },
+                { name: '年度报告.pdf', path: '/files/report.pdf' },
+                { name: '使用指南.pdf', path: '/files/guide.pdf' }
+            ];
+
+            const container = document.getElementById('pdf-list');
+            pdfList.forEach(pdf => {
+                const link = document.createElement('a');
+                link.className = 'pdf-link';
+                link.href = `/viewer.html?file=${encodeURIComponent(pdf.path)}&id=${userId}`;
+                link.textContent = pdf.name;
+                container.appendChild(link);
+            });
+        }
+
+        // 错误处理
+        function showError(msg) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = msg;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        // 启动验证
+        init();
+    </script>
+</body>
+</html>
