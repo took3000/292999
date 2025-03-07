@@ -126,7 +126,7 @@
 
     <!-- 文档列表容器 -->
     <div id="contentArea" style="display: none;">
-        <h1 style="text-align: center; margin: 2rem 0;">您的专属文档库</h1>
+        <h1 style="text-align: center; margin: 2rem 0;">您的专属文档库 [当前等级：黄金]</h1>
         <div class="pdf-grid" id="pdfContainer"></div>
 
         <!-- 底部切换按钮 -->
@@ -190,7 +190,7 @@
                     }));
                     showDocumentList();
                 } else {
-                    throw new Error('此访问ID无效，可前往公众号申请');
+                    throw new Error('ID无效，可前往公众号申请');
                 }
             } catch (error) {
                 errorEl.textContent = error.message;
@@ -219,7 +219,7 @@
                     }));
                     location.reload();
                 } else {
-                    throw new Error('ID无效，请重试');
+                    throw new Error('忘记ID？请联系公众号客服');
                 }
             } catch (error) {
                 errorEl.textContent = error.message;
