@@ -146,6 +146,7 @@
 </head>
 <body>
     <div id="loading">正在加载文档...</div>
+   
     <div id="pdf-container"></div>
 
     <script>
@@ -171,7 +172,7 @@
 
                             <a href="/H/VIP.html" class="copy-btn download-btn" style="text-decoration:none">返回列表</a>
                             <a href="${pdfUrl}" download class="copy-btn download-btn" style="text-decoration:none">存为PDF</a>
-                            <button class="copy-btn" onclick="copyUrl(this)">发给兄弟</button>
+                            <button class="copy-btn" onclick="copyUrl(this)">私发兄弟</button>
                         `}
                     </div>
                 </div>`;
@@ -278,7 +279,7 @@
                 btn.textContent = '✓ 复制成功';
                 btn.classList.add('copied');
                 setTimeout(() => {
-                    btn.textContent = '复制浏览链接';
+                    btn.textContent = '浏览链接';
                     btn.classList.remove('copied', 'copying');
                 }, 2000);
             };
@@ -336,7 +337,7 @@ function copyPdfUrl(btn) {
         btn.textContent = '✓ 复制成功';
         btn.classList.add('copied');
         setTimeout(() => {
-            btn.textContent = '复制PDF直链';
+            btn.textContent = '下载链接';
             btn.classList.remove('copied', 'copying');
         }, 2000);
     }).catch(() => {
