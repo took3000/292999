@@ -194,7 +194,7 @@
                     }));
                     showDocumentList();
                 } else {
-                    throw new Error('ID无效，解锁全部文档库失败。可凭文章点赞记录前往公众号解锁文章对应的单个文档');
+                    throw new Error('此个人ID不存在，解锁文档库失败。可凭文章点赞记录前往公众号申请解锁对应的单份文档');
                 }
             } catch (error) {
                 errorEl.textContent = error.message;
