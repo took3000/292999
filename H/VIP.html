@@ -194,7 +194,7 @@
                     }));
                     showDocumentList();
                 } else {
-                    throw new Error('ID无效，可前往公众号申请个人ID');
+                    throw new Error('ID无效，解锁全部文档库失败。可凭文章点赞记录前往公众号解锁文章对应的单个文档');
                 }
             } catch (error) {
                 errorEl.textContent = error.message;
