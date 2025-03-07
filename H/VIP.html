@@ -118,7 +118,7 @@
     <div class="wechat-overlay" id="authOverlay">
         <div class="tip-card">
             <div class="tip-text">🔒 安全访问验证</div>
-            <input type="password" id="accessCode" class="auth-input" placeholder="输入8位访问码">
+            <input type="password" id="accessCode" class="auth-input" placeholder="请输入8位访问ID">
             <button class="copy-btn" onclick="handleAuth()">立即验证</button>
             <div id="errorMsg" class="error-msg" style="display: none;"></div>
         </div>
@@ -190,7 +190,7 @@
                     }));
                     showDocumentList();
                 } else {
-                    throw new Error('访问码无效');
+                    throw new Error('此访问ID无效，可前往公众号申请');
                 }
             } catch (error) {
                 errorEl.textContent = error.message;
